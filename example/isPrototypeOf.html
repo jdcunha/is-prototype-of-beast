@@ -1,0 +1,81 @@
+<script src="../tinytest.js"></script>
+<script>
+/*
+ * We compare the prototype between the source and target
+ * If the prototypes don't match then we recurse through until we compare it successfully or we reach null
+ * 
+ * @param {Object} sourcePrototype
+ * @param {Object} targetObject 
+ * @return {Boolean} 
+ *
+ * Test case 1: Source prototype should be related to target object prototype and return true
+ * Test case 2: Source prototype which is a nested parent prototype should be related to the target object and return true
+ * Test case 3: Source prototype which is not related to the target object should not be equal and return false
+ * Test case 4: Object.prototype which is the base prototype should be related to the target object and return true
+ */
+function isPrototypeOf(sourcePrototype, targetObject){
+   //If through recursion we reached the end of the prototype link then the child object is null 
+   //If the child object itself is empty and has no prototype
+   if(targetObject === null || targetObject.__proto__ === undefined) return false;
+   
+   //Get the prototype of the chile object and compare it with the sourcePrototype
+   var prototypeOfTargetObject = targetObject.__proto__;
+   if(prototypeOfTargetObject === sourcePrototype){
+     return true;
+   }else{
+     return isPrototypeOf(sourcePrototype,prototypeOfTargetObject);  
+   }
+   
+}
+
+
+/*Creating some test objects here for our test cases*/
+var canine = {
+  bark: function() {
+    console.log('bark');
+  }
+};
+
+var feline = {
+  meow: function() {
+    console.log('meow');
+  }
+}
+
+var dog = Object.create(canine);
+dog.fetch = function() {
+  console.log('fetch');
+};
+
+var myDog = Object.create(dog);
+var empty = Object.create(null);
+
+
+/*Test cases*/
+tests({
+  'Source prototype should be related to target object prototype and return true: ':function(){
+		var result = isPrototypeOf(dog, myDog); 
+	    eq(result,true);
+  },
+  
+  'Source prototype which is a nested parent prototype should be related to the target object and return true: ':function(){
+		var result = isPrototypeOf(canine, myDog); 
+	    eq(result,true);
+  },
+  
+  'Source prototype which is not related to the target object should not be equal and return false: ': function(){
+		var result = isPrototypeOf(feline, myDog);
+	    eq(result,false);
+  },
+  
+  'Source prototype which is a null object should not be related to the target object (that is not empty ) should not be equal and return false: ': function(){
+		var result = isPrototypeOf(dog, empty);
+	    eq(result,false);
+  },
+  
+  'Object.prototype which is the base prototype should be related to the target object and return true': function(){
+		var result = isPrototypeOf(Object.prototype, myDog);
+	    eq(result,true);
+  }
+}); 
+</script>
